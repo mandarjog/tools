@@ -94,6 +94,7 @@ pilot:
     requests:
       cpu: 4800m
       memory: 2G
+  traceSampling: 1.0
 
 ingress:
   enabled: false
