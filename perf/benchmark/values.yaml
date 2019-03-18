@@ -21,6 +21,8 @@ rbac:
   # the other policies allow a random non exist user to access it.
   numPolicies: 3
 
+
+whitebox: true
 server:  # server overrides
   #tlsmode: DISABLE
   tlsmode: ISTIO_MUTUAL

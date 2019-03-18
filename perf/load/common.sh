@@ -31,6 +31,9 @@ function start_servicegraphs() {
   local min=${2:-"0"}
 
    for ((ii=$min; ii<$nn; ii++)) {
+    if [[ ${ii} -ne ${min} ]]; then
+      sleep 80
+    fi
     ns=$(printf 'service-graph%.2d' $ii)
     prefix=$(printf 'svc%.2d-' $ii)
     if [[ -z "${DELETE}" ]];then
@@ -40,6 +43,7 @@ function start_servicegraphs() {
       ${CMD} "${WD}/loadclient/setup_test.sh" "${ns}" "${prefix}"
       ${CMD} run_test "${ns}" "${prefix}"
     fi
+
   }
 }
 

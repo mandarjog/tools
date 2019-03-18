@@ -44,7 +44,7 @@ def run_command_sync(command):
 
 class Fortio(object):
     ports = {
-        "http": {"direct_port": 8077, "port": 8080, "ingress": 80},
+        "http": {"direct_port": 8077, "port": 9080, "ingress": 80},
         "grpc": {"direct_port": 8076, "port": 8079, "ingress": 80},
         "direct_envoy": {"direct_port": 8076, "port": 8079}
     }
@@ -83,7 +83,7 @@ class Fortio(object):
             svc=self.server.ip, port=self.ports[self.mode]["port"], size=self.size)
 
     def bothsidecar(self, fortio_cmd):
-        return fortio_cmd + "_both http://{svc}:{port}/echo?size={size}".format(
+        return fortio_cmd + "_both http://localhost:{port}/echo?size={size}".format(
             svc=self.server.labels["app"], port=self.ports[self.mode]["port"], size=self.size)
 
     def ingress(self, fortio_cmd):

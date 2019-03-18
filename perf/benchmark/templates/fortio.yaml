@@ -29,18 +29,24 @@ metadata:
   name: {{ $.name }}
 spec:
   ports:
-  - name: http-echo
-    port: 8080
+  - name: http-echo-server
+    port: 9085
     protocol: TCP
-  - name: grpc-ping
-    port: 8079
+  - name: http-echo-client
+    port: 9086
     protocol: TCP
-  - name: http-echoa
-    port: 8078
-    protocol: TCP
-  - name: grpc-pinga
-    port: 8077
-    protocol: TCP
+#  - name: http-echo
+#    port: 8080
+#    protocol: TCP
+#  - name: grpc-ping
+#    port: 8079
+#    protocol: TCP
+#  - name: http-echoa
+#    port: 8078
+#    protocol: TCP
+#  - name: grpc-pinga
+#    port: 8077
+#    protocol: TCP
   selector:
     app: {{ $.name }}
 {{- if $.V.expose }}
@@ -88,6 +94,9 @@ spec:
         {{- end }}
         sidecar.istio.io/proxyCPU: {{ $.Values.proxy.cpu }}
         sidecar.istio.io/proxyMemory: {{ $.Values.proxy.memory }}
+        {{- if $.Values.whitebox }}
+        sidecar.istio.io/interceptionMode: "NONE"
+        {{- end }}
       labels:
         app: {{ $.name }}
     spec:
@@ -105,10 +114,12 @@ spec:
         - report
 {{- end }}
         ports:
+{{- if eq $.Values.whitebox false }}
         - containerPort: 8080
           protocol: TCP
         - containerPort: 8079
           protocol: TCP
+{{- end }}
         resources:
 {{- if $.Values.appresources }}
 {{ toYaml $.Values.appresources | indent 10 }}
@@ -175,7 +186,8 @@ spec:
     - destination:
         host: {{ $.name }}
         port:
-          number: 8080
+          #number: 8080
+          number: 15999
 ---
 {{- end }}
 
@@ -212,8 +224,69 @@ spec:
       serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
 
 ---
-
-
+{{- if $.Values.whitebox }}
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: client
+spec:
+  workloadSelector:
+    labels:
+      app: fortioclient
+  egress:
+  - port:
+      number: 9080
+      protocol: http
+      name: http-echo-server
+    captureMode: NONE
+    bind: 127.0.0.1
+    hosts:
+    - "twopods/fortioserver.twopods.svc.cluster.local"
+  - hosts:
+    - "./*"
+    #- istio-system/*
+  ingress:
+  - port:
+      number: 9081
+      protocol: http
+      name: http-echo-client
+    defaultEndpoint: 127.0.0.1:8080
+    captureMode: NONE
+#  - port:
+#      number: 8079
+#      protocol: http
+#      name: fortioserver
+#    defaultEndpoint: 127.0.0.1:8079
+#    captureMode: NONE
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: server
+spec:
+  workloadSelector:
+    labels:
+      app: fortioserver
+  egress:
+  - hosts:
+    - "./*"
+    #- istio-system/*
+  ingress:
+  - port:
+      number: 9080
+      protocol: http
+      name: http-echo-server
+    defaultEndpoint: 127.0.0.1:8080
+    captureMode: NONE
+#
+#  - port:
+#      number: 8079
+#      protocol: http
+#      name: fortioserver
+#    defaultEndpoint: 127.0.0.1:8079
+#    captureMode: NONE
+{{- end }}
+---
 {{- if $.Values.cert }}
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
