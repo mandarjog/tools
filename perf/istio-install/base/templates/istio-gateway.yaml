@@ -90,7 +90,7 @@ spec:
   http:
   - route:
     - destination:
-        host: istio-prometheus.istio-prometheus.svc.cluster.local
+        host: prometheus.istio-prometheus.svc.cluster.local
         port:
           number: 9090
 ---
@@ -99,7 +99,7 @@ kind: "DestinationRule"
 metadata:
   name: "prom"
 spec:
-  host: istio-prometheus.istio-prometheus.svc.cluster.local
+  host: prometheus.istio-prometheus.svc.cluster.local
   trafficPolicy:
     tls:
       mode: DISABLE
