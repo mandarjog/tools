@@ -24,7 +24,7 @@ global:
         memory: 256Mi 
 
     envoyAccessLogService:
-      enabled: true
+      enabled: false
       host: accesslog-grpc.istio-system.svc.cluster.local
       port: 18090 
 
